@@ -1,0 +1,57 @@
+# Release evidence for Production and Consequential repositories.
+# SOS-EOS-001: EOS-EVD-03 (durable release record), EOS-SUP-01 (SBOM), EOS-G4-01.
+# SOS-STD-001: CS-06.4. Runs on a version tag; attaches the SBOM and evidence to the
+# GitHub Release so the record does not depend on expiring CI logs.
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  release-evidence:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Generate SBOM (SPDX)
+        uses: anchore/sbom-action@7b36ad622f042cab6f59a75c2ac24ccb256e9b45 # v0.20.4
+        with:
+          format: spdx-json
+          output-file: sbom.spdx.json
+          upload-artifact: false
+          upload-release-assets: false
+      - name: Write release evidence record
+        env:
+          TAG: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import json, os, hashlib, datetime
+          sbom = open("sbom.spdx.json", "rb").read()
+          record = {
+              "standard": "SOS-EOS-001 v1.0 / SOS-STD-001 v1.2",
+              "repository": os.environ["GITHUB_REPOSITORY"],
+              "tag": os.environ["TAG"],
+              "commit": os.environ["GITHUB_SHA"],
+              "run": os.environ["RUN_URL"],
+              "sbom_sha256": hashlib.sha256(sbom).hexdigest(),
+              "produced_by": "GitHub Actions, workflow release",
+              "produced_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              "owner_decisions": "G3 and G4 are recorded in Linear, not here",
+          }
+          json.dump(record, open("release-evidence.json", "w"), indent=2)
+          PY
+      - name: Attach SBOM and evidence to the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --verify-tag --draft --title "$TAG" --notes "Draft release. Owner signs G3 and G4 in Linear before publishing."
+          gh release upload "$TAG" sbom.spdx.json release-evidence.json --clobber
