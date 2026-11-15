@@ -1,15 +1,21 @@
 # Automated update pull requests go through normal checks and review (CS-08.2).
+# Cooldown: wait 7 days after a release before proposing it, so a malicious or
+# broken new version has time to be caught upstream (supply chain, EOS-SUP-02).
 version: 2
 updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "deps"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 7
     commit-message:
       prefix: "ci"
