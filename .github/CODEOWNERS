@@ -1,0 +1,10 @@
+# Protected paths (SOS-EOS-001 EOS-GIT-02, "protect the verifier").
+# Only these paths need the owner's review. Everything else merges on required checks.
+# The ruleset's "require code owner review" rule is what makes this file enforce anything.
+/.github/                   @jdavis-cyber
+/.gitleaks.toml             @jdavis-cyber
+/SECURITY.md                @jdavis-cyber
+/sos-project.yml            @jdavis-cyber
+/scripts/check_manifest.py  @jdavis-cyber
+/scripts/check_commits.py   @jdavis-cyber
+/Makefile                   @jdavis-cyber
