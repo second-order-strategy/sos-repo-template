@@ -1,0 +1,12 @@
+# Secret scanning configuration (CS-06.1).
+# Owner-only file (CODEOWNERS): an agent cannot clear its own finding.
+# Every allowlist entry records why, who approved it and when.
+title = "Second Order Strategy secret scan"
+
+[extend]
+useDefault = true
+
+# Example of an approved exception. Copy the pattern, never weaken the default rules.
+# [[allowlists]]
+# description = "Test fixture key, not a real credential. Approved by Jerome Davis, YYYY-MM-DD, Linear AI-000"
+# paths = ['''tests/fixtures/fake_key\.pem''']

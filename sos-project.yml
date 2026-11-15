@@ -1,0 +1,15 @@
+# Project manifest (SOS-EOS-001 EOS-PRF-01, EOS-ROL-01, EOS-REC-01).
+# CI reads this file. Owner-only (CODEOWNERS): a profile change needs the owner.
+standard: "SOS-EOS-001 v1.0"
+profile: sandbox            # sandbox | production | consequential
+overlays: []                # ai, data
+classification: public      # public | internal
+linear:
+  team_key: AI              # issue keys look like AI-123
+  issue: AI-000             # the issue that registered this project
+expiry: 2027-02-14          # required for sandbox: promote, extend with a reason, or archive
+owners:
+  outcome: Jerome Davis
+  engineering: Jerome Davis
+  release: Jerome Davis
+  operational: Jerome Davis
