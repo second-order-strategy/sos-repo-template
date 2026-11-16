@@ -12,14 +12,31 @@ permissions:
   contents: read
 
 jobs:
+  verify:
+    uses: ./.github/workflows/ci.yml
+
   release-evidence:
+    needs: verify
+    concurrency: release-${{ github.ref }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
+          fetch-depth: 0
           persist-credentials: false
+      - name: Release tags point at commits on the default branch
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: git merge-base --is-ancestor "$GITHUB_SHA" "origin/$DEFAULT_BRANCH"
+      - name: Download this run's CI evidence
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ needs.verify.outputs.evidence_id }}
+          path: ${{ runner.temp }}/verified-ci
+          merge-multiple: true
       - name: Generate SBOM (SPDX)
         uses: anchore/sbom-action@7b36ad622f042cab6f59a75c2ac24ccb256e9b45 # v0.20.4
         with:
@@ -30,28 +47,41 @@ jobs:
       - name: Write release evidence record
         env:
           TAG: ${{ github.ref_name }}
-          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}
         run: |
           python3 - <<'PY'
           import json, os, hashlib, datetime
-          sbom = open("sbom.spdx.json", "rb").read()
+          from pathlib import Path
+          ci = json.loads((Path(os.environ["RUNNER_TEMP"]) / "verified-ci/ci-evidence.json").read_text())
+          if ci["commit"] != os.environ["GITHUB_SHA"] or ci["repository"] != os.environ["GITHUB_REPOSITORY"]:
+              raise SystemExit("CI evidence does not match the release candidate")
+          sbom = Path("sbom.spdx.json").read_bytes()
           record = {
               "standard": "SOS-EOS-001 v1.0 / SOS-STD-001 v1.2",
               "repository": os.environ["GITHUB_REPOSITORY"],
               "tag": os.environ["TAG"],
-              "commit": os.environ["GITHUB_SHA"],
+              "commit": ci["commit"],
+              "verification": ci,
               "run": os.environ["RUN_URL"],
               "sbom_sha256": hashlib.sha256(sbom).hexdigest(),
               "produced_by": "GitHub Actions, workflow release",
               "produced_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
               "owner_decisions": "G3 and G4 are recorded in Linear, not here",
           }
-          json.dump(record, open("release-evidence.json", "w"), indent=2)
+          Path("release-evidence.json").write_text(json.dumps(record, indent=2) + "\n")
           PY
       - name: Attach SBOM and evidence to the release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
         run: |
-          gh release view "$TAG" >/dev/null 2>&1 || gh release create "$TAG" --verify-tag --draft --title "$TAG" --notes "Draft release. Owner signs G3 and G4 in Linear before publishing."
-          gh release upload "$TAG" sbom.spdx.json release-evidence.json --clobber
+          if draft=$(gh release view "$TAG" --json isDraft --jq .isDraft); then
+            if [[ "$draft" != true ]]; then
+              echo "::error::Release $TAG is already published."
+              exit 1
+            fi
+            gh release upload "$TAG" sbom.spdx.json release-evidence.json --clobber
+          else
+            gh release create "$TAG" sbom.spdx.json release-evidence.json --verify-tag --draft \
+              --title "$TAG" --notes "Draft release. Link the applicable owner decisions in Linear before publishing."
+          fi
