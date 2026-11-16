@@ -5,8 +5,8 @@ profile: sandbox            # sandbox | production | consequential
 overlays: []                # ai, data
 classification: public      # public | internal
 linear:
-  team_key: AI              # issue keys look like AI-123
-  issue: AI-000             # the issue that registered this project
+  team_key: SOS              # issue keys look like SOS-123
+  issue: SOS-25              # the issue that registered this project; a new project uses its own
 expiry: 2027-02-14          # required for sandbox: promote, extend with a reason, or archive
 owners:
   outcome: Jerome Davis

@@ -2,10 +2,8 @@
 
 **Classification:** Public
 
-Evidence comes from the run, never from the author (EOS-EVD-02, CS-05.5).
+The `ci` workflow uploads `ci-evidence.json` for each completed PR or main run. Its `commit` identifies the tested revision. On pull requests, `pr_head` identifies the contributor's revision. The `test-results` artifact holds JUnit and coverage XML when tests run.
 
-- **Every pull request:** the `ci` workflow uploads `ci-evidence.json` (commit, profile, each check's result) and test reports as run artifacts.
-- **Every release tag:** the `release` workflow attaches `sbom.spdx.json` and `release-evidence.json` to the GitHub Release, which doesn't expire.
-- **Owner decisions (G1 to G5):** recorded in Linear, linked from the release.
+Pushing a version tag (`v*`) runs the same CI checks against that revision. After the gate passes, the release workflow attaches `release-evidence.json`, including that run's verification record, and `sbom.spdx.json` to the draft GitHub Release. Reruns can update a draft. Published releases are closed to workflow updates.
 
-List each release here with its links.
+The owner links the applicable Linear decisions, exceptions, handoff and recovery records in the draft before publishing. Add each published release and its record links here.

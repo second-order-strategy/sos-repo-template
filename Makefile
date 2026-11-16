@@ -1,6 +1,5 @@
 # The contract CI calls. Replace the commands if this project isn't Python;
 # keep the target names (install, lint, test, coverage).
-COVERAGE_MIN ?= 0
 
 .PHONY: install lint test coverage
 
@@ -16,4 +15,5 @@ test:
 
 coverage:
 	mkdir -p reports
-	pytest --junitxml=reports/junit.xml --cov=src --cov-report=term --cov-report=xml:reports/coverage.xml --cov-fail-under=$(COVERAGE_MIN)
+	@floor=$${COVERAGE_MIN:-$$(python scripts/check_manifest.py sos-project.yml --coverage-min)} || exit 1; \
+	pytest --junitxml=reports/junit.xml --cov=src --cov=scripts --cov-report=term --cov-report=xml:reports/coverage.xml --cov-fail-under="$$floor"

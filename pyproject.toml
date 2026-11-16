@@ -1,13 +1,13 @@
 [project]
 name = "sos-app"
 version = "0.1.0"
-description = "Replace with what this project is, in one line."
+description = "Starter Python package for Second Order Strategy repositories."
 requires-python = ">=3.12"
 license = "Apache-2.0"
 dependencies = []
 
 [build-system]
-requires = ["setuptools>=75"]
+requires = ["setuptools==84.2.1"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]

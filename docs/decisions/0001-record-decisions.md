@@ -1,6 +1,6 @@
 # 1. Record major decisions
 
-**Status:** Accepted · **Date:** YYYY-MM-DD · **Classification:** Public
+**Status:** Accepted · **Recorded:** 2026-11-14 · **Classification:** Public
 
 ## Context
 

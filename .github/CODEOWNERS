@@ -8,3 +8,8 @@
 /scripts/check_manifest.py  @jdavis-cyber
 /scripts/check_commits.py   @jdavis-cyber
 /Makefile                   @jdavis-cyber
+/pyproject.toml             @jdavis-cyber
+/requirements-dev.txt       @jdavis-cyber
+/.gitignore                 @jdavis-cyber
+/.semgrepignore             @jdavis-cyber
+/.gitleaksignore            @jdavis-cyber

@@ -8,5 +8,5 @@ useDefault = true
 
 # Example of an approved exception. Copy the pattern, never weaken the default rules.
 # [[allowlists]]
-# description = "Test fixture key, not a real credential. Approved by Jerome Davis, YYYY-MM-DD, Linear AI-000"
+# description = "Test fixture key, not a real credential. Approved by Jerome Davis, YYYY-MM-DD, Linear SOS-000"
 # paths = ['''tests/fixtures/fake_key\.pem''']

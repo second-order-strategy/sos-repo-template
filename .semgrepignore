@@ -1,0 +1,6 @@
+# Include the test suite. Only local build and test output is outside the scan.
+.venv/
+build/
+dist/
+reports/
+**/*.egg-info/
